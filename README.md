@@ -102,34 +102,58 @@ that lets us observe scheduling behavior.
 *Sample Program 2*
 
 ```c
+#define _GNU_SOURCE
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sched.h>
 
-#define BIG_NUM 50000000
+#define BIG_NUM 1000000000
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
 
-    if (argc < 2) {
-        fprintf(stderr, "Program requires an integer argument.\n");
-        exit(1);
-    }
+   if (argc < 2) {
+      fprintf(stderr, "Program requires an integer argument.\n");
+      exit(1);
+   }
 
-    long sum = 0;
-    int argint = atoi(argv[1]);
-    for (long i = 0; i < BIG_NUM; i++) {
-        if (argint > 0) {
+   cpu_set_t set;
+   int joinedCPU = 0;
+   CPU_ZERO(&set);
+   CPU_SET(joinedCPU, &set);
+
+   if (sched_setaffinity(getpid(), sizeof(cpu_set_t), &set) < 0) {
+      perror("Problem setting affinity");
+   }
+
+   long sum = 0;
+   int argint = atoi(argv[1]);
+   if (argint == 0) {
+      printf("Running %d iterations with no yield.\n", BIG_NUM);
+   } else if (argint == 1) {
+      printf("Running %d iterations with yield.\n", BIG_NUM);
+   } else {
+      printf("Running infinite loop with no yield.\n");
+   }
+
+   /* If argint == 2, loop forever */
+   if (argint == 2) {
+      while (1) {
+         sum += 1;
+      }
+   } else {
+      for (long i = 0; i < BIG_NUM; i++) {
+         if (argint == 1) {
             sched_yield();
-        }
-        sum += i;
-    }
-
+         }
+         sum += i;
+      }
+   }
 }
 ```
 
 * Run the program with `0` as a parameter so that the yield does not occur.
-* Now, run the program with `1` as a parameter.  Verify that calling `yield` 
+* Now, run the program with `1` as a parameter.  Verify that calling `sched_yield` 
   slows the program by a factor of at least 10. (Think about how you can 
   verify this without waiting for the program to terminate. )
 
@@ -145,8 +169,8 @@ window.  What percentage of the CPU does the program use?
 10. With `top` open, run the program with `0` in one terminal and with `1` in another. What percentage of the CPU does the 
 yielding process get? Is that what you expected?  Or does the value seem either too high or too low?  Why?
 
-11. How would you modify the program so that it still defers to other processes by calling `sched_yield`, but isn't absurdly slow 
-(compared to the non-yielding version)?
+11. Modify the program so that it still defers to other processes by calling `sched_yield`, but isn't absurdly slow 
+(compared to the non-yielding version).
 
 
 
@@ -170,8 +194,5 @@ A word of caution:
 the experiment works only if processes with multiple types of scheduling
 *are running on the processor at the same time*.
 
-12. Your writeup should include your source code,
-    a description of how you ran the program(s),
-    and any relevant screenshots.
-    Your description should be clear enough that I can repeat your experiment
-    if I choose to do so.
+12. What is the relative priority of the scheduling policies? Explain how your 
+results demonstrate this. Don't forget to include your source code. 
