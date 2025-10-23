@@ -6,6 +6,9 @@ CIS 452 Lab 8:  Process Scheduling in Linux
 The goal of this lab is to explore process scheduling in Linux and to explore
 system calls that allow users to modfiy scheduling.
 
+Important: This lab does not work well on a virtual machine. Please use EOS, or some other physcial Linux machine.
+Don't use WSL on Windows.
+
 ### Processor Affinity
 
 As discussed in class,
@@ -15,6 +18,16 @@ run on.
 One reason this may be helpful is to make better use of the cache.
 However, a process will not necessarily run faster simply because it has
 affinity for a particular CPU.
+
+Before trying to control processor affinitiy, let's check out what the OS does by default.
+
+* Write a simple program with an infinite, compute-bound loop. Run the program in one window.
+  Run `top` in the other window. Configure `top` to show the most recently used processor. (Press `f`, 
+  navigate to item `P`, press the space bar, then press `q`)
+
+
+ 1. How often does the process migrate between CPUs? 
+
 
 We can use system calls and the `top` process to observe CPU affinity in action.
 Sample Program 1 is designed to accept a single Boolean argument (`0` or `1`)
@@ -77,18 +90,18 @@ int main(int argc, char *argv[])
 }
 ```
 
-1. Depending on whether or not affinity is set,
+2. Depending on whether or not affinity is set,
    is the program faster, slower, or about the same?
 
-2. Approximately how large is the difference?  (Two times? Ten times?)
+3. Approximately how large is the difference?  (Two times? Ten times?)
 
-3. Explain **why** you observed the performance that you did.
+4. Explain **why** you observed the performance that you did.
 
-4. Explain how you can use the `top` program to verify that your affinity request has been honored. 
+5. Explain how you can use the `%CPU` field the `top` program to verify that your affinity request has been honored. 
 
-5. Predict what will happen if you add a second CPU to `set`.
+6. Predict what will happen if you add a second CPU to `set`.
 
-6. Add a second CPU to `set` and verify.  (Include a screen shot of `top`.)
+7. Add a second CPU to `set` and verify.  (Include a screen shot of `top`.)
 
 
 ### Yielding
@@ -158,21 +171,19 @@ int main(int argc, char **argv) {
   verify this without waiting for the program to terminate. )
 
 
-7. Explain how you verified that the slowdown was at least 10x.
+8. Explain how you verified that the slowdown was at least 10x.
 
-8. Run the program with `1` as a parameter again.  This time have `top` open in a different 
+9. Run the program with `1` as a parameter again.  This time have `top` open in a different 
 window.  What percentage of the CPU does the program use?
 
-9. Why does the program take so long to run, even though it's access to the CPU does not appear limited? 
+10. Why does the program take so long to run, even though it's access to the CPU does not appear limited? 
    Hint: Reduce `BIG_NUM` by a factor of 10, then use `time` to measure the time needed to run the process with yields.
 
-10. With `top` open, run the program with `0` in one terminal and with `1` in another. What percentage of the CPU does the 
+11. With `top` open, run the program with `0` in one terminal and with `1` in another. What percentage of the CPU does the 
 yielding process get? Is that what you expected?  Or does the value seem either too high or too low?  Why?
 
-11. Modify the program so that it still defers to other processes by calling `sched_yield`, but isn't absurdly slow 
+12. Modify the program so that it still defers to other processes by calling `sched_yield`, but isn't absurdly slow 
 (compared to the non-yielding version).
-
-
 
 ### Experimenting with Policies
 
@@ -194,5 +205,5 @@ A word of caution:
 the experiment works only if processes with multiple types of scheduling
 *are running on the processor at the same time*.
 
-12. What is the relative priority of the scheduling policies? Explain how your 
+13. What is the relative priority of the scheduling policies? Explain how your 
 results demonstrate this. Don't forget to include your source code. 
